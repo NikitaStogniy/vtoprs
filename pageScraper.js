@@ -18,7 +18,9 @@ const scraperObject = {
       );
       console.log(divCount);
       let data = [];
-      const divs = await page.$$("div[class^='iva-item-root-']");
+      const divs = await page.$$(
+        "div[data-marker='catalog-serp'] div[class^='iva-item-root-']"
+      );
       for (let div of divs) {
         let dataObj = {};
         dataObj["price"] = await div.$eval(
