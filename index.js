@@ -33,6 +33,6 @@ app.get("/data/:id", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Web server running on port 3000"));
+app.listen(5000, () => console.log("Server started on port 5000"));
 
 module.exports = client;
