@@ -8,7 +8,7 @@ const scraperObject = {
     let scrapedData = [];
     async function scrapeCurrentPage() {
       // Wait for the required DOM to be rendered
-      await page.waitForSelector("aside[data-name='PreInfiniteBanner']");
+      await page.waitForSelector("div[data-testid='offer-card']");
       // Get the link to all the required books
       const divCount = await page.$$eval(
         "div[data-testid='offer-card']",
