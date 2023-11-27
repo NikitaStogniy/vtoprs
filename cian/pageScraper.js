@@ -1,7 +1,5 @@
-const parseImg = require("./parseImg");
-
 const scraperObject = {
-  async scraper(browser, url) {
+  async scraper(browser, url, limit) {
     let page = await browser.newPage();
     await page.setDefaultNavigationTimeout(0);
     console.log(`Navigating to ${url}...`);
@@ -17,6 +15,12 @@ const scraperObject = {
         (divs) => divs.length
       );
       console.log(divCount);
+      if (limit > 0 && divCount < limit) {
+        let moreButton = await page.$("a._93444fe79c--more-button--nqptt");
+        if (moreButton) {
+          await moreButton.click();
+        }
+      }
       let data = [];
       const divs = await page.$$("div[data-testid='offer-card']");
       for (let div of divs) {
@@ -30,7 +34,6 @@ const scraperObject = {
           (node) => node.getAttribute("href").match(/\d+/)[0]
         );
         let button = await div.$('button[data-mark="PhoneButton"]');
-        console.log("click");
         await button.click();
         // Ожидание загрузки изображения после клика
         try {
@@ -44,14 +47,15 @@ const scraperObject = {
           );
         }
         data.push(dataObj);
+        if (data.length == limit) {
+          break;
+        }
       }
       scrapedData = data;
-      console.log(data);
       await page.close();
       return scrapedData;
     }
     let data = await scrapeCurrentPage();
-    console.log(data);
     return data;
   },
 };

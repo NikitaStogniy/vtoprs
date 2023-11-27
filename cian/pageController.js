@@ -1,12 +1,12 @@
 const pageScraper = require("./pageScraper.js");
 const client = require("../db.js");
 
-async function scrapeAll(browserInstance, url, id) {
+async function scrapeAll(browserInstance, url, id, limit) {
   let browser;
   try {
     browser = await browserInstance;
     let scrapedData = {};
-    scrapedData = await pageScraper.scraper(browser, url);
+    scrapedData = await pageScraper.scraper(browser, url, limit);
     await browser.close();
 
     const values = scrapedData
@@ -20,5 +20,5 @@ async function scrapeAll(browserInstance, url, id) {
   }
 }
 
-module.exports = (browserInstance, url, id) =>
-  scrapeAll(browserInstance, url, id);
+module.exports = (browserInstance, url, id, limit) =>
+  scrapeAll(browserInstance, url, id, limit);
