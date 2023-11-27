@@ -1,6 +1,9 @@
 const scraperObject = {
   async scraper(browser, url, limit) {
     let page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
+    );
     await page.setDefaultNavigationTimeout(0);
     console.log(`Navigating to ${url}...`);
     // Navigate to the selected category
