@@ -16,7 +16,7 @@ const scraperObject = {
         "div[data-marker='catalog-serp'] div[class^='iva-item-root-']",
         (divs) => divs.length
       );
-      console.log(divCount);
+
       await page.evaluate(() => {
         window.scrollBy(0, 300);
       });
@@ -28,56 +28,14 @@ const scraperObject = {
       }
 
       let data = [];
-      if (limit > 0 && divCount < limit) {
-        let moreButton = await page.$(
-          "a[data-marker='pagination-button/nextPage']"
-        );
-        if (moreButton) {
-          const divs = await page.$$(
-            "div[data-marker='catalog-serp'] div[class^='iva-item-root-']"
-          );
-
-          for (let div of divs) {
-            let dataObj = {};
-            dataObj["price"] = await div.$eval(
-              "strong.styles-module-root-LIAav > span",
-              (node) => node.textContent.replace(/\D/g, "")
-            );
-            dataObj["id"] = await div.evaluate((node) =>
-              node.getAttribute("data-item-id")
-            );
-            await page.hover("div[class^='iva-item-root-']");
-            await page.hover("div[class^='iva-item-root-']");
-            let button = await div.$('button[type="button"]');
-            if (button) {
-              await button.click();
-              // Ожидание загрузки изображения после клика
-              try {
-                // Ожидание загрузки изображения после клика
-                await page.waitForSelector('img[data-marker="phone-image"]', {
-                  timeout: 30000,
-                });
-                dataObj["phoneImage"] = await parseImg(
-                  await page.$eval(
-                    'img[data-marker="phone-image"]',
-                    (img) => img.src
-                  )
-                );
-              } catch (error) {
-                console.log("Не удалось загрузить изображение: ", error);
-                dataObj["phoneImage"] = "Not found";
-              }
-            } else {
-              dataObj["phoneImage"] = "Not found";
-            }
-            data.push(dataObj);
-            if (data.length >= limit) {
-              break;
-            }
-          }
-          await moreButton.click();
-        }
-      }
+      // if (limit > 0 && divCount < limit) {
+      //   let moreButton = await page.$(
+      //     "a[data-marker='pagination-button/nextPage']"
+      //   );
+      //   if (moreButton) {
+      //     await moreButton.click();
+      //   }
+      // }
       const divs = await page.$$(
         "div[data-marker='catalog-serp'] div[class^='iva-item-root-']"
       );
