@@ -60,14 +60,14 @@ if (cluster.isMaster) {
     }
   });
 
-  const server = app.listen(3000, () =>
-    console.log(`Worker ${process.pid} running on port 3000`)
+  const server = app.listen(5000, () =>
+    console.log(`Worker ${process.pid} running on port 5000`)
   );
 
   server.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
       console.log(
-        `Port 3000 is already in use. Please close the process using this port and try again.`
+        `Port 5000 is already in use. Please close the process using this port and try again.`
       );
     } else {
       console.log(`An error occurred: ${error.message}`);
