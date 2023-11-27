@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
 const browserObject = require("./browser");
-const scraperController = require("./pageController");
+const avscraperController = require("./avito/pageController.js");
+const cianscraperController = require("./cian/pageController.js");
 const dataStore = {};
 const cluster = require("cluster");
 const numCPUs = require("os").cpus().length;
@@ -24,14 +25,26 @@ if (cluster.isMaster) {
   app.post("/parse", async (req, res) => {
     const url = req.body.url;
     const reqName = req.body.name;
+    const name = url.includes("avito")
+      ? "avito"
+      : url.includes("cian")
+      ? "cian"
+      : reqName;
+    if (name != "avito" && name != "cian") {
+      return res.status(404).send("Wrong name");
+    }
     const result = await client.query(
-      "INSERT INTO requests(url, name) VALUES($1, $2) RETURNING id",
-      [url, reqName]
+      "INSERT INTO requests(url, name, source) VALUES($1, $2, $3) RETURNING id",
+      [url, reqName, name]
     );
     const id = result.rows[0].id;
-    res.json({ id });
+    res.status(200).json({ id });
     let browserInstance = browserObject.startBrowser();
-    await scraperController(browserInstance, url, id);
+    if (name == "avito") {
+      await avscraperController(browserInstance, url, id);
+    } else {
+      await cianscraperController(browserInstance, url, id);
+    }
   });
 
   app.get("/data/:id", async (req, res) => {
@@ -41,22 +54,20 @@ if (cluster.isMaster) {
         "SELECT * FROM flats WHERE reqID = $1",
         [data.id]
       );
-      const flats = await result.rows;
-
-      res.json(flats);
+      res.status(200).json(result.rows);
     } else {
       res.status(404).send("Data not found");
     }
   });
 
-  const server = app.listen(5000, () =>
-    console.log(`Worker ${process.pid} running on port 5000`)
+  const server = app.listen(3000, () =>
+    console.log(`Worker ${process.pid} running on port 3000`)
   );
 
   server.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
       console.log(
-        `Port 5000 is already in use. Please close the process using this port and try again.`
+        `Port 3000 is already in use. Please close the process using this port and try again.`
       );
     } else {
       console.log(`An error occurred: ${error.message}`);
