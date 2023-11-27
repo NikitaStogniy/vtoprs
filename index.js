@@ -3,7 +3,6 @@ const app = express();
 const browserObject = require("./browser");
 const avscraperController = require("./avito/pageController.js");
 const cianscraperController = require("./cian/pageController.js");
-const dataStore = {};
 const cluster = require("cluster");
 const numCPUs = require("os").cpus().length;
 
@@ -25,6 +24,7 @@ if (cluster.isMaster) {
   app.post("/parse", async (req, res) => {
     const url = req.body.url;
     const reqName = req.body.name;
+    const limit = req.body.limit || 0;
     const name = url.includes("avito")
       ? "avito"
       : url.includes("cian")
@@ -41,9 +41,9 @@ if (cluster.isMaster) {
     res.status(200).json({ id });
     let browserInstance = browserObject.startBrowser();
     if (name == "avito") {
-      await avscraperController(browserInstance, url, id);
+      await avscraperController(browserInstance, url, id, limit);
     } else {
-      await cianscraperController(browserInstance, url, id);
+      await cianscraperController(browserInstance, url, id, limit);
     }
   });
 
@@ -60,14 +60,14 @@ if (cluster.isMaster) {
     }
   });
 
-  const server = app.listen(5000, () =>
-    console.log(`Worker ${process.pid} running on port 5000`)
+  const server = app.listen(3000, () =>
+    console.log(`Worker ${process.pid} running on port 3000`)
   );
 
   server.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
       console.log(
-        `Port 5000 is already in use. Please close the process using this port and try again.`
+        `Port 3000 is already in use. Please close the process using this port and try again.`
       );
     } else {
       console.log(`An error occurred: ${error.message}`);

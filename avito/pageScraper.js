@@ -1,7 +1,7 @@
 const parseImg = require("./parseImg");
 
 const scraperObject = {
-  async scraper(browser, url) {
+  async scraper(browser, url, limit) {
     let page = await browser.newPage();
     await page.setDefaultNavigationTimeout(0);
     console.log(`Navigating to ${url}...`);
@@ -17,10 +17,71 @@ const scraperObject = {
         (divs) => divs.length
       );
       console.log(divCount);
+      await page.evaluate(() => {
+        window.scrollBy(0, 300);
+      });
+      let rate = await page.$$(
+        'form[class="uxs-2w2XclsRLI uxs-scx40f uxs-2Ql_Y1udt8"] > div > div.uxs-QFD9X9QAio.uxs-8a4j0g > button'
+      );
+      for (let button of rate) {
+        await button.click();
+      }
+
       let data = [];
+      if (limit > 0 && divCount < limit) {
+        let moreButton = await page.$(
+          "a[data-marker='pagination-button/nextPage']"
+        );
+        if (moreButton) {
+          const divs = await page.$$(
+            "div[data-marker='catalog-serp'] div[class^='iva-item-root-']"
+          );
+
+          for (let div of divs) {
+            let dataObj = {};
+            dataObj["price"] = await div.$eval(
+              "strong.styles-module-root-LIAav > span",
+              (node) => node.textContent.replace(/\D/g, "")
+            );
+            dataObj["id"] = await div.evaluate((node) =>
+              node.getAttribute("data-item-id")
+            );
+            await page.hover("div[class^='iva-item-root-']");
+            await page.hover("div[class^='iva-item-root-']");
+            let button = await div.$('button[type="button"]');
+            if (button) {
+              await button.click();
+              // Ожидание загрузки изображения после клика
+              try {
+                // Ожидание загрузки изображения после клика
+                await page.waitForSelector('img[data-marker="phone-image"]', {
+                  timeout: 30000,
+                });
+                dataObj["phoneImage"] = await parseImg(
+                  await page.$eval(
+                    'img[data-marker="phone-image"]',
+                    (img) => img.src
+                  )
+                );
+              } catch (error) {
+                console.log("Не удалось загрузить изображение: ", error);
+                dataObj["phoneImage"] = "Not found";
+              }
+            } else {
+              dataObj["phoneImage"] = "Not found";
+            }
+            data.push(dataObj);
+            if (data.length >= limit) {
+              break;
+            }
+          }
+          await moreButton.click();
+        }
+      }
       const divs = await page.$$(
         "div[data-marker='catalog-serp'] div[class^='iva-item-root-']"
       );
+
       for (let div of divs) {
         let dataObj = {};
         dataObj["price"] = await div.$eval(
@@ -31,10 +92,9 @@ const scraperObject = {
           node.getAttribute("data-item-id")
         );
         await page.hover("div[class^='iva-item-root-']");
-        console.log("hover");
+        await page.hover("div[class^='iva-item-root-']");
         let button = await div.$('button[type="button"]');
         if (button) {
-          console.log("click");
           await button.click();
           // Ожидание загрузки изображения после клика
           try {
@@ -56,14 +116,15 @@ const scraperObject = {
           dataObj["phoneImage"] = "Not found";
         }
         data.push(dataObj);
+        if (data.length >= limit) {
+          break;
+        }
       }
       scrapedData = data;
-      console.log(data);
       await page.close();
       return scrapedData;
     }
     let data = await scrapeCurrentPage();
-    console.log(data);
     return data;
   },
 };
