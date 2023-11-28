@@ -49,19 +49,19 @@ const scraperObject = {
         dataObj["id"] = await div.evaluate((node) =>
           node.getAttribute("data-item-id")
         );
-        await page.hover("div[class^='iva-item-root-']");
-        await page.hover("div[class^='iva-item-root-']");
+        await div.hover("div[class^='iva-item-root-']");
+        await div.hover("div[class^='iva-item-root-']");
         let button = await div.$('button[type="button"]');
         if (button) {
           await button.click();
           // Ожидание загрузки изображения после клика
           try {
             // Ожидание загрузки изображения после клика
-            await page.waitForSelector('img[data-marker="phone-image"]', {
+            await div.waitForSelector('img[data-marker="phone-image"]', {
               timeout: 30000,
             });
             dataObj["phoneImage"] = await parseImg(
-              await page.$eval(
+              await div.$eval(
                 'img[data-marker="phone-image"]',
                 (img) => img.src
               )
