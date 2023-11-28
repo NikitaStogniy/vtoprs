@@ -40,7 +40,7 @@ const scraperObject = {
         await button.click();
         // Ожидание загрузки изображения после клика
         try {
-          dataObj["phoneImage"] = await page.$eval(
+          dataObj["phoneImage"] = await div.$eval(
             'span[data-mark="PhoneValue"]',
             (span) => span.textContent.replace(/\D/g, "")
           );
