@@ -49,8 +49,7 @@ const scraperObject = {
         dataObj["id"] = await div.evaluate((node) =>
           node.getAttribute("data-item-id")
         );
-        await div.hover("div[class^='iva-item-root-']");
-        await div.hover("div[class^='iva-item-root-']");
+        await page.hover(`div[data-item-id='${dataObj["id"]}']`);
         let button = await div.$('button[type="button"]');
         if (button) {
           await button.click();
