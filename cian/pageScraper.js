@@ -37,16 +37,13 @@ const scraperObject = {
           (node) => node.getAttribute("href").match(/\d+/)[0]
         );
         let button = await div.$('button[data-mark="PhoneButton"]');
-        await button.click();
-        // Ожидание загрузки изображения после клика
-        try {
+        if (button) {
+          await button.click();
+          // Ожидание загрузки изображения после клика
+          await new Promise((resolve) => setTimeout(resolve, 3000)); // Задержка в 2 секунды
           dataObj["phoneImage"] = await div.$eval(
             'span[data-mark="PhoneValue"]',
-            (span) => span.textContent.replace(/\D/g, "")
-          );
-        } catch (error) {
-          console.error(
-            "Ошибка: Не удалось найти элемент, соответствующий селектору 'span[data-mark=\"PhoneValue\"]'"
+            (node) => node.textContent
           );
         }
         data.push(dataObj);
